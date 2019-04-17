@@ -9,6 +9,28 @@
     <height>300</height>
    </rect>
   </property>
+  <property name="styleSheet">
+    <string notr="true">#Form {
+      background: white;
+      }
+
+      QProgressBar {
+         border: 1px solid black;
+         text-align: top;
+         padding: 1px;
+         border-bottom-right-radius: 7px;
+         border-bottom-left-radius: 7px;
+         width: 50px;
+      }
+
+      QProgressBar::chunk {
+         background-color: #05B8CC;
+         border-bottom-right-radius: 7px;
+         border-bottom-left-radius: 7px;
+         border: 1px solid black;
+      }
+    </string>
+  </property>
   <property name="windowTitle" >
    <string>MainWindow</string>
   </property>
