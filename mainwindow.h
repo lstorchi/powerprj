@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QProgressBar>
 
 namespace Ui {
 class MainWindow;
@@ -11,12 +12,17 @@ class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
-public:
+  public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
-private:
+  public slots:
+    void increase();
+    void decrease();
+
+  private:
     Ui::MainWindow *ui;
+    QProgressBar * _bar;
 };
 
 #endif // MAINWINDOW_H
