@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 
 #include <QGridLayout>
+#include <QMessageBox>
 #include <QPushButton>
 #include <QPalette>
 #include <QWidget>
@@ -55,6 +56,15 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
     this->setWindowTitle("Power Project");
 
+    _info_label = new QLabel(tr("<i>Choose a menu option, or right-click to "
+                              "invoke a context menu</i>"));
+    _info_label->setFrameStyle(QFrame::StyledPanel | QFrame::Sunken);
+    _info_label->setAlignment(Qt::AlignCenter);
+
+
+    createactions();
+    createmenus();
+
     QWidget * centralwdg = new QWidget(this);
     QGridLayout *vlay = new QGridLayout(centralwdg);
     QPushButton *btn1 = new QPushButton("Decrease");
@@ -98,4 +108,49 @@ void MainWindow::decrease()
     value -= 1;
     setStyleSheet (getColor(value));
     _bar->setValue(value);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//  PRIVATE
+///////////////////////////////////////////////////////////////////////////////
+
+void MainWindow::save()
+{
+    _info_label->setText(tr("Invoked <b>File|Save</b>"));
+}
+
+void MainWindow::about()
+{
+    _info_label->setText(tr("Invoked <b>Help|About</b>"));
+    QMessageBox::about(this, tr("About PowerApp"),
+            tr("This is the Power project main Application created by "
+              "<b>loriano at storchi dot org</b>"));
+}
+
+void MainWindow::createactions()
+{
+    _save_act = new QAction(tr("&Save"), this);
+    _save_act->setShortcuts(QKeySequence::Save);
+    _save_act->setStatusTip(tr("Save result to disk"));
+    connect(_save_act, &QAction::triggered, this, &MainWindow::save);
+
+    _exit_act = new QAction(tr("E&xit"), this);
+    _exit_act->setShortcuts(QKeySequence::Quit);
+    _exit_act->setStatusTip(tr("Exit from PowerApp"));
+    connect(_exit_act, &QAction::triggered, this, &QWidget::close);
+
+    _about_act = new QAction(tr("&About"), this);
+    _about_act->setStatusTip(tr("Show the application's About box"));
+    connect( _about_act, &QAction::triggered, this, &MainWindow::about);
+}
+
+void MainWindow::createmenus()
+{
+    _file_menu = menuBar()->addMenu(tr("&File"));
+    _file_menu->addAction(_save_act);
+    _file_menu->addSeparator();
+    _file_menu->addAction(_exit_act);
+
+    _help_menu = menuBar()->addMenu(tr("&Help"));
+    _help_menu->addAction(_about_act);
 }
