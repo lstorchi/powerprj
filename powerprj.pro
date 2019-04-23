@@ -27,14 +27,17 @@ CONFIG += c++11
 SOURCES += \
         main.cpp \
         mainwindow.cpp \
-        valuereader.cpp
+        valuereader.cpp \
+        confwindow.cpp
 
 HEADERS += \
         mainwindow.h \
-        valuereader.h
+        valuereader.h \
+        confwindow.h
 
 FORMS += \
-        mainwindow.ui
+        mainwindow.ui \
+        confwindow.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

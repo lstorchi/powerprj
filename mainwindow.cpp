@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 
 #include <QGridLayout>
+#include <QFileDialog>
 #include <QMessageBox>
 #include <QPushButton>
 #include <QPalette>
@@ -10,147 +11,242 @@
 
 #include <iostream>
 
-namespace
-{
-    const QString getColor (int value)
-    {
-      QString basic = QString("QProgressBar {"
-         "border: 1px solid black;"
-         "text-align: top;"
-         "padding: 1px;"
-         "border-bottom-right-radius: 7px;"
-         "border-bottom-left-radius: 7px;"
-         "width: 50px;}");
-      QString green = QString("QProgressBar::chunk {"
-          "background-color: #7CFC00;" 
-          "border-bottom-right-radius: 7px;" 
-          "border-bottom-left-radius: 7px;" 
-          "border: 1px solid black;" 
-          "}");
-      QString yellow = QString("QProgressBar::chunk {"
-          "background-color: #FFFF00;" 
-          "border-bottom-right-radius: 7px;" 
-          "border-bottom-left-radius: 7px;" 
-          "border: 1px solid black;" 
-          "}");
-      QString red = QString("QProgressBar::chunk {"
-          "background-color: #FF0000;" 
-          "border-bottom-right-radius: 7px;" 
-          "border-bottom-left-radius: 7px;" 
-          "border: 1px solid black;" 
-          "}");
-
-      if (value <= 30)
-        return basic + green;
-      else if (value > 30 && value < 60)
-        return basic + yellow;
-      else
-        return basic + red;
-    };
-} 
+#define MAXPERC 100
+#define MINPERC 0
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
-    ui->setupUi(this);
-    this->setWindowTitle("Power Project");
 
-    _info_label = new QLabel(tr("<i>Choose a menu option, or right-click to "
-                              "invoke a context menu</i>"));
-    _info_label->setFrameStyle(QFrame::StyledPanel | QFrame::Sunken);
-    _info_label->setAlignment(Qt::AlignCenter);
+  _iamenabled = true;
+  _max_value = int(MAXPERC/2);
+  
+  ui->setupUi(this);
+  this->setWindowTitle("Power Project");
+  
+  _info_label = new QLabel(tr("<i>Choose a menu option, or right-click to "
+                            "invoke a context menu</i>"));
+  _info_label->setFrameStyle(QFrame::StyledPanel | QFrame::Sunken);
+  _info_label->setAlignment(Qt::AlignCenter);
+  
+  
+  createactions();
+  createmenus();
+  
+  QWidget * centralwdg = new QWidget(this);
+  QGridLayout *vlay = new QGridLayout(centralwdg);
+  QPushButton *btn1 = new QPushButton("Decrease");
+  vlay->addWidget(btn1,0,0,1,1);
+  QPushButton *btn2 = new QPushButton("Increase");
+  vlay->addWidget(btn2,0,2,1,1);
+  
+  _bar = new QProgressBar();
+  _bar->setOrientation(Qt::Vertical);
+  _bar->setMinimum(MINPERC);
+  _bar->setMaximum(MAXPERC);
+  _bar->setValue(0);
+  _bar->setTextVisible(true);
+  
+  connect(btn1, SIGNAL(clicked()), this, SLOT(decrease()));
+  connect(btn2, SIGNAL(clicked()), this, SLOT(increase()));
 
+  _confwin = new ConfWindow(this);
 
-    createactions();
-    createmenus();
-
-    QWidget * centralwdg = new QWidget(this);
-    QGridLayout *vlay = new QGridLayout(centralwdg);
-    QPushButton *btn1 = new QPushButton("Decrease");
-    vlay->addWidget(btn1,0,0,1,1);
-    QPushButton *btn2 = new QPushButton("Increase");
-    vlay->addWidget(btn2,0,2,1,1);
-
-    _bar = new QProgressBar();
-    _bar->setOrientation(Qt::Vertical);
-    _bar->setMinimum(0);
-    _bar->setMaximum(100);
-    _bar->setValue(0);
-    _bar->setTextVisible(true);
-
-    connect(btn1, SIGNAL(clicked()), this, SLOT(decrease()));
-    connect(btn2, SIGNAL(clicked()), this, SLOT(increase()));
-
-    vlay->addWidget(_bar,1,1,10,1);
-
-    centralwdg->setLayout(vlay);
-
-    setCentralWidget(centralwdg);
+  connect(_confwin, SIGNAL(IamClosing()), 
+      this, SLOT(configure_is_closed()));
+  
+  vlay->addWidget(_bar,1,1,10,1);
+  
+  centralwdg->setLayout(vlay);
+  
+  setCentralWidget(centralwdg);
 }
 
 MainWindow::~MainWindow()
 {
-    delete ui;
+  delete ui;
 }
 
-void MainWindow::increase()
+void MainWindow::configure_is_closed ()
 {
-    int value = _bar->value();
-    value += 1;
-    setStyleSheet (getColor(value));
-    _bar->setValue(value);
-}
-
-void MainWindow::decrease()
-{
-    int value = _bar->value();
-    value -= 1;
-    setStyleSheet (getColor(value));
-    _bar->setValue(value);
+  _iamenabled = true;
+  show();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 //  PRIVATE
 ///////////////////////////////////////////////////////////////////////////////
 
+void MainWindow::increase()
+{
+  if ( _iamenabled )
+  {
+    int value = _bar->value();
+    value += 10;
+    setStyleSheet (getcolor(value));
+    _bar->setValue(value);
+  }
+}
+
+void MainWindow::decrease()
+{
+  if ( _iamenabled )
+  {
+    int value = _bar->value();
+    value -= 10;
+    setStyleSheet (getcolor(value));
+    _bar->setValue(value);
+  }
+}
+
+void MainWindow::close()
+{
+  if ( _iamenabled )
+  {
+    QMessageBox::StandardButton reply;
+    reply = QMessageBox::question(this, "Quit PowerApp", "Quit ?",
+                                QMessageBox::Yes|QMessageBox::No);
+
+    if (reply == QMessageBox::Yes) 
+      QApplication::quit();
+
+    return;
+  }
+}
+
 void MainWindow::save()
 {
+  if ( _iamenabled )
+  {
     _info_label->setText(tr("Invoked <b>File|Save</b>"));
+    
+    QString filename = QFileDialog::getSaveFileName(this,
+        tr("Save results"), "",
+        tr("TXT file (*.txt)"));
+    
+    //std::cout << filename.toUtf8().constData() << std::endl;
+    
+    if (! (filename == ""))
+    {
+      if (QFile::exists(filename))
+        QFile::remove(filename);
+        
+      QFile fp(filename);
+      fp.open(QIODevice::WriteOnly);
+      
+      // TODO  
+        
+      fp.close();
+    }
+  }
+}
+
+void MainWindow::configure()
+{
+  if ( _iamenabled )
+  {
+    hide();
+    _iamenabled = false;
+    _confwin->show();
+  }
 }
 
 void MainWindow::about()
 {
+  if ( _iamenabled )
+  {
     _info_label->setText(tr("Invoked <b>Help|About</b>"));
     QMessageBox::about(this, tr("About PowerApp"),
             tr("This is the Power project main Application created by "
               "<b>loriano at storchi dot org</b>"));
+  }
 }
 
 void MainWindow::createactions()
 {
+  if ( _iamenabled )
+  { 
     _save_act = new QAction(tr("&Save"), this);
     _save_act->setShortcuts(QKeySequence::Save);
     _save_act->setStatusTip(tr("Save result to disk"));
     connect(_save_act, &QAction::triggered, this, &MainWindow::save);
-
+    
+    _configure_act = new QAction(tr("&Configure"), this);
+    _configure_act->setStatusTip(tr("Configure max value"));
+    connect(_configure_act, &QAction::triggered, this, &MainWindow::configure);
+    
     _exit_act = new QAction(tr("E&xit"), this);
     _exit_act->setShortcuts(QKeySequence::Quit);
     _exit_act->setStatusTip(tr("Exit from PowerApp"));
-    connect(_exit_act, &QAction::triggered, this, &QWidget::close);
-
+    connect(_exit_act, &QAction::triggered, this, &MainWindow::close);
+    
     _about_act = new QAction(tr("&About"), this);
     _about_act->setStatusTip(tr("Show the application's About box"));
     connect( _about_act, &QAction::triggered, this, &MainWindow::about);
+  }
 }
 
 void MainWindow::createmenus()
 {
+  if ( _iamenabled )
+  {  
     _file_menu = menuBar()->addMenu(tr("&File"));
     _file_menu->addAction(_save_act);
+    _file_menu->addAction(_configure_act);
     _file_menu->addSeparator();
     _file_menu->addAction(_exit_act);
-
+   
     _help_menu = menuBar()->addMenu(tr("&Help"));
     _help_menu->addAction(_about_act);
+  }
+}
+
+const QString MainWindow::getcolor (int value) const
+{
+  QString basic = QString("QProgressBar {"
+     "border: 1px solid black;"
+     "text-align: top;"
+     "padding: 1px;"
+     "border-bottom-right-radius: 7px;"
+     "border-bottom-left-radius: 7px;"
+     "width: 50px;}");
+  QString green = QString("QProgressBar::chunk {"
+      "background-color: #7CFC00;" 
+      "border-bottom-right-radius: 7px;" 
+      "border-bottom-left-radius: 7px;" 
+      "border: 1px solid black;" 
+      "}");
+  QString yellow = QString("QProgressBar::chunk {"
+      "background-color: #FFFF00;" 
+      "border-bottom-right-radius: 7px;" 
+      "border-bottom-left-radius: 7px;" 
+      "border: 1px solid black;" 
+      "}");
+  QString red = QString("QProgressBar::chunk {"
+      "background-color: #FF0000;" 
+      "border-bottom-right-radius: 7px;" 
+      "border-bottom-left-radius: 7px;" 
+      "border: 1px solid black;" 
+      "}");
+
+  if (value <= _max_value )
+    return basic + green;
+  //else if (value > 30 && value < 60)
+  //  return basic + yellow;
+  else
+    return basic + red;
+}
+
+void MainWindow::setmaxvalue(int inval)
+{
+  if (inval > MAXPERC || inval < MINPERC)
+    _max_value = int(MAXPERC/2);
+  else
+    _max_value = inval;
+}
+
+int MainWindow::getmaxvalue() const
+{
+  return _max_value;
 }
