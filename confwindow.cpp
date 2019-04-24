@@ -25,7 +25,10 @@ ConfWindow::ConfWindow(QWidget *parent) :
   _bar->setValue(0);
   _bar->setTextVisible(true);
   
-  vlay->addWidget(_bar,1,1,10,1);
+  vlay->addWidget(_bar,0,0,10,1);
+
+  QPushButton *btn1 = new QPushButton("Done");
+  vlay->addWidget(btn1,0,1,1,1);
   
   centralwdg->setLayout(vlay);
   
