@@ -3,6 +3,29 @@
 
 #include "valuereader.h"
 
+#ifdef _WIN32
+#include <windows.h>
+
+namespace 
+{
+  void mysleep(unsigned milliseconds)
+  {              
+    Sleep(milliseconds);
+  }
+}
+
+#else
+#include <unistd.h>
+
+namespace
+{
+  void mysleep(unsigned milliseconds)
+  {
+    usleep(milliseconds * 1000);   
+  }
+}
+#endif
+
 VReader::VReader()
 {
   _value = 0;
@@ -21,9 +44,7 @@ void VReader::readvalue ()
   {
     _value = read_the_value ();
     
-    int val = 0;
-    for (int i=0; i<1000000000; ++i)
-      ++val;
+    mysleep(1000);
 
     emit(returnvalue(_value));
   }
