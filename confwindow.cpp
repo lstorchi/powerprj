@@ -29,18 +29,34 @@ ConfWindow::ConfWindow(QWidget *parent) :
 
   QPushButton *btn1 = new QPushButton("Done");
   vlay->addWidget(btn1,0,1,1,1);
+
+  QObject::connect(btn1, SIGNAL(clicked()), this, SLOT(close()));
   
   centralwdg->setLayout(vlay);
   
   setCentralWidget(centralwdg);
+
+  _maxvalue = -1;
 }
 
 ConfWindow::~ConfWindow()
 {
 }
 
+int ConfWindow::get_maxvalue() const
+{
+  return _maxvalue;
+}
+
 void ConfWindow::closeEvent( QCloseEvent* event )
 {
   emit IamClosing();
   event->accept();
+}
+
+void ConfWindow::updateprogress(int val)
+{
+  _bar->setValue(val);
+  if (val > _maxvalue)
+    _maxvalue = val;
 }

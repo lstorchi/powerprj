@@ -18,8 +18,13 @@ class ConfWindow : public QMainWindow
     explicit ConfWindow(QWidget *parent = nullptr);
     ~ConfWindow();
 
+    int get_maxvalue() const;
+
   protected:
     void closeEvent( QCloseEvent* event ) override;
+
+  public slots:
+    void updateprogress(int);
 
   signals:
     void IamClosing();
@@ -29,6 +34,7 @@ class ConfWindow : public QMainWindow
  
     QProgressBar * _bar;
 
+    int _maxvalue;
 };
 
 #endif 

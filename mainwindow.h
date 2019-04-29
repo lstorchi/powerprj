@@ -9,6 +9,8 @@
 #include <QProgressBar>
 #include <QContextMenuEvent>
 
+#include "valuereader.h"
+
 namespace Ui {
   class MainWindow;
 }
@@ -23,15 +25,13 @@ class MainWindow : public QMainWindow
 
   public slots:
     void configure_is_closed();
+    void updateprogress(int); 
 
   private slots:
     void save();
     void about();
     void close();
     void configure();
-
-    void increase();
-    void decrease();
 
   private:
     bool _iamenabled;
@@ -44,6 +44,8 @@ class MainWindow : public QMainWindow
     QMenu * _file_menu;
     QMenu * _help_menu;
 
+    QPushButton * _accept, * _refuse;
+
     QAction * _save_act;
     QAction * _exit_act;
     QAction * _about_act;
@@ -52,6 +54,9 @@ class MainWindow : public QMainWindow
     QLabel * _info_label;
 
     ConfWindow * _confwin;
+
+    QThread * _mainthread;
+    VReader * _valrdr;
 
     void createactions();
     void createmenus();

@@ -6,6 +6,7 @@
 #include <QMessageBox>
 #include <QPushButton>
 #include <QPalette>
+#include <QThread>
 #include <QWidget>
 #include <QColor>
 
@@ -35,11 +36,15 @@ MainWindow::MainWindow(QWidget *parent) :
   createmenus();
   
   QWidget * centralwdg = new QWidget(this);
-  QGridLayout *vlay = new QGridLayout(centralwdg);
-  QPushButton *btn1 = new QPushButton("Decrease");
-  vlay->addWidget(btn1,0,0,1,1);
-  QPushButton *btn2 = new QPushButton("Increase");
-  vlay->addWidget(btn2,0,2,1,1);
+  QGridLayout * vlay = new QGridLayout(centralwdg);
+
+  _accept = new QPushButton("Accept");
+  _accept->setEnabled(false);
+  vlay->addWidget(_accept,0,0,1,1);
+
+  _refuse = new QPushButton("Refuse");
+  _refuse->setEnabled(false);
+  vlay->addWidget(_refuse,0,2,1,1);
   
   _bar = new QProgressBar();
   _bar->setOrientation(Qt::Vertical);
@@ -48,9 +53,6 @@ MainWindow::MainWindow(QWidget *parent) :
   _bar->setValue(0);
   _bar->setTextVisible(true);
   
-  connect(btn1, SIGNAL(clicked()), this, SLOT(decrease()));
-  connect(btn2, SIGNAL(clicked()), this, SLOT(increase()));
-
   _confwin = new ConfWindow(this);
 
   connect(_confwin, SIGNAL(IamClosing()), 
@@ -61,6 +63,14 @@ MainWindow::MainWindow(QWidget *parent) :
   centralwdg->setLayout(vlay);
   
   setCentralWidget(centralwdg);
+
+  _mainthread = new QThread(parent);
+  _valrdr = new VReader();
+  _valrdr->moveToThread(_mainthread);
+
+  connect(_mainthread, SIGNAL(started()), _valrdr, SLOT(readvalue()));
+  
+  _mainthread->start();
 }
 
 MainWindow::~MainWindow()
@@ -71,34 +81,26 @@ MainWindow::~MainWindow()
 void MainWindow::configure_is_closed ()
 {
   _iamenabled = true;
+  _max_value = _confwin->get_maxvalue();
+
+  _accept->setEnabled(true);
+  _refuse->setEnabled(true);
+ 
   show();
+}
+
+void MainWindow::updateprogress(int val)
+{
+  if (_iamenabled)
+  {
+    setStyleSheet (getcolor(val));
+    _bar->setValue(val);
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 //  PRIVATE
 ///////////////////////////////////////////////////////////////////////////////
-
-void MainWindow::increase()
-{
-  if ( _iamenabled )
-  {
-    int value = _bar->value();
-    value += 10;
-    setStyleSheet (getcolor(value));
-    _bar->setValue(value);
-  }
-}
-
-void MainWindow::decrease()
-{
-  if ( _iamenabled )
-  {
-    int value = _bar->value();
-    value -= 10;
-    setStyleSheet (getcolor(value));
-    _bar->setValue(value);
-  }
-}
 
 void MainWindow::close()
 {
@@ -149,6 +151,11 @@ void MainWindow::configure()
     hide();
     _iamenabled = false;
     _confwin->show();
+
+    connect(_valrdr, SIGNAL(returnvalue(int)), 
+        this, SLOT(updateprogress(int)));
+    connect(_valrdr, SIGNAL(returnvalue(int)), 
+        _confwin, SLOT(updateprogress(int)));
   }
 }
 
