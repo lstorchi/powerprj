@@ -48,6 +48,11 @@ int ConfWindow::get_maxvalue() const
   return _maxvalue;
 }
 
+void ConfWindow::reset_maxvalue()
+{
+  _maxvalue = -1;
+}
+
 void ConfWindow::closeEvent( QCloseEvent* event )
 {
   emit IamClosing();

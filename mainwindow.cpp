@@ -150,6 +150,7 @@ void MainWindow::configure()
   {
     hide();
     _iamenabled = false;
+    _confwin->reset_maxvalue();
     _confwin->show();
 
     connect(_valrdr, SIGNAL(returnvalue(int)), 

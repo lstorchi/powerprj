@@ -19,6 +19,7 @@ class ConfWindow : public QMainWindow
     ~ConfWindow();
 
     int get_maxvalue() const;
+    void reset_maxvalue();
 
   protected:
     void closeEvent( QCloseEvent* event ) override;
