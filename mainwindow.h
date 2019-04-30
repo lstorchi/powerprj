@@ -5,7 +5,9 @@
 
 #include <QMenu>
 #include <QLabel>
+#include <QFrame>
 #include <QMainWindow>
+#include <QGridLayout>
 #include <QProgressBar>
 #include <QContextMenuEvent>
 
@@ -34,7 +36,9 @@ class MainWindow : public QMainWindow
     void configure();
 
   private:
-    bool _iamenabled;
+    bool _iamenabled, _selectoption;
+
+    QGridLayout * _vlay;
 
     Ui::MainWindow *ui;
     QProgressBar * _bar;
@@ -57,6 +61,10 @@ class MainWindow : public QMainWindow
 
     QThread * _mainthread;
     VReader * _valrdr;
+
+    QFrame * _line10;
+    QFrame * _line40;
+    QFrame * _line70;
 
     void createactions();
     void createmenus();

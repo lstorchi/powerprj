@@ -1,7 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-#include <QGridLayout>
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QPushButton>
@@ -20,6 +19,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
 
+  _selectoption = false;
   _iamenabled = true;
   _max_value = int(MAXPERC/2);
   
@@ -31,20 +31,38 @@ MainWindow::MainWindow(QWidget *parent) :
   _info_label->setFrameStyle(QFrame::StyledPanel | QFrame::Sunken);
   _info_label->setAlignment(Qt::AlignCenter);
   
-  
   createactions();
   createmenus();
   
   QWidget * centralwdg = new QWidget(this);
-  QGridLayout * vlay = new QGridLayout(centralwdg);
+
+  _line10 = new QFrame(centralwdg);
+  _line10->setObjectName(QString::fromUtf8("line"));
+  _line10->setGeometry(QRect(320, 150, 118, 3));
+  _line10->setFrameShape(QFrame::HLine);
+  _line10->setFrameShadow(QFrame::Sunken);
+
+  _line40 = new QFrame(centralwdg);
+  _line40->setObjectName(QString::fromUtf8("line"));
+  _line40->setGeometry(QRect(320, 150, 118, 3));
+  _line40->setFrameShape(QFrame::HLine);
+  _line40->setFrameShadow(QFrame::Sunken);
+
+  _line70 = new QFrame(centralwdg);
+  _line70->setObjectName(QString::fromUtf8("line"));
+  _line70->setGeometry(QRect(320, 150, 118, 3));
+  _line70->setFrameShape(QFrame::HLine);
+  _line70->setFrameShadow(QFrame::Sunken);
+
+  _vlay = new QGridLayout(centralwdg);
 
   _accept = new QPushButton("Accept");
   _accept->setEnabled(false);
-  vlay->addWidget(_accept,0,0,1,1);
+  _vlay->addWidget(_accept, 2, 0, 1, 1, 0);
 
   _refuse = new QPushButton("Refuse");
   _refuse->setEnabled(false);
-  vlay->addWidget(_refuse,0,2,1,1);
+  _vlay->addWidget(_refuse, 18, 0, 1, 1, 0);
   
   _bar = new QProgressBar();
   _bar->setOrientation(Qt::Vertical);
@@ -58,9 +76,13 @@ MainWindow::MainWindow(QWidget *parent) :
   connect(_confwin, SIGNAL(IamClosing()), 
       this, SLOT(configure_is_closed()));
   
-  vlay->addWidget(_bar,1,1,10,1);
+  _vlay->addWidget(_bar, 0, 1, 20, 1, 0);
+
+  _vlay->addWidget(_line10, 2, 2, 1, 1, 0);
+  _vlay->addWidget(_line40, 8, 2, 1, 1, 0);
+  _vlay->addWidget(_line70, 14, 2, 1, 1, 0);
   
-  centralwdg->setLayout(vlay);
+  centralwdg->setLayout(_vlay);
   
   setCentralWidget(centralwdg);
 
@@ -83,9 +105,6 @@ void MainWindow::configure_is_closed ()
   _iamenabled = true;
   _max_value = _confwin->get_maxvalue();
 
-  _accept->setEnabled(true);
-  _refuse->setEnabled(true);
- 
   show();
 }
 
@@ -95,6 +114,27 @@ void MainWindow::updateprogress(int val)
   {
     setStyleSheet (getcolor(val));
     _bar->setValue(val);
+
+    if (! _selectoption)
+    {
+      if (val >= (_max_value * 0.40)) 
+      { 
+        _selectoption = true;
+        _accept->setEnabled(true);
+        _refuse->setEnabled(true);
+      }
+    }
+    else 
+    {
+      if (val >= (_max_value * 0.70))
+      {
+
+      }
+      else if (val <= (_max_value * 0.10))
+      {
+
+      }
+    }
   }
 }
 
@@ -148,6 +188,10 @@ void MainWindow::configure()
 {
   if ( _iamenabled )
   {
+    _selectoption = false;
+    _accept->setEnabled(false);
+    _refuse->setEnabled(false);
+ 
     hide();
     _iamenabled = false;
     _confwin->reset_maxvalue();
