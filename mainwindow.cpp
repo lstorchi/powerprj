@@ -78,9 +78,9 @@ MainWindow::MainWindow(QWidget *parent) :
   
   _vlay->addWidget(_bar, 0, 1, 20, 1, 0);
 
-  _vlay->addWidget(_line10, 2, 2, 1, 1, 0);
-  _vlay->addWidget(_line40, 8, 2, 1, 1, 0);
-  _vlay->addWidget(_line70, 14, 2, 1, 1, 0);
+  _vlay->addWidget(_line10, 18, 2, 1, 1, 0);
+  _vlay->addWidget(_line40, 12, 2, 1, 1, 0);
+  _vlay->addWidget(_line70, 6, 2, 1, 1, 0);
   
   centralwdg->setLayout(_vlay);
   
